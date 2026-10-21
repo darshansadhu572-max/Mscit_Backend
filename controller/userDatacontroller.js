@@ -40,13 +40,24 @@ export const adduser = async(req, res) => {
             const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
                 method: "POST",
                 headers: {
-                    "api-key": ProcessingInstruction.env
-                }
+                    "api-key": process.env.BREVO_API_KEY,
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({
+                    sender: { name: "Demo app", email: "darshansadhu572@gmail.com" },
+                    to: [{ email: req.body.email }],
+                    subject: "Welcome Email",
+                    htmlContent: "<p>Welcome to our website</p>",
+                }),
             })
+            if (!brevoRes.ok){
+                console.error('Brevo email failed:', brevoRes.status, await brevoRes.text())
+            }
+        } catch(emailError) {
+            console.error('Brevo email error:', emailError.message)
         }
 
-        res.status(200).json({message:"user added successfully", data:saveUserData}
-        )
+        res.status(200).json({message:"user added successfully", data:saveUserData})
     } catch (error) {
         res.status(500).json({message:error.message})
     }
